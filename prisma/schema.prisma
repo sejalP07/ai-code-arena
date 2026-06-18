@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  image       String?
+  createdAt   DateTime     @default(now())
+
+  comparisons Comparison[]
+}
+
+model Comparison {
+  id          String          @id @default(cuid())
+  prompt      String
+  language    String
+  createdAt   DateTime        @default(now())
+
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+
+  responses   ModelResponse[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ModelResponse {
+  id            String      @id @default(cuid())
+
+  provider      String
+  model         String
+  output        String      @db.Text
+
+  duration      Int?
+  tokens        Int?
+
+  comparisonId  String
+  comparison    Comparison  @relation(fields: [comparisonId], references: [id])
+}
