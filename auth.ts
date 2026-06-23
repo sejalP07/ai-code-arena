@@ -14,3 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 });
+
+console.log("GOOGLE ID:", !!process.env.AUTH_GOOGLE_ID);
+console.log("GOOGLE SECRET:", !!process.env.AUTH_GOOGLE_SECRET);
+console.log("AUTH SECRET:", !!process.env.AUTH_SECRET);

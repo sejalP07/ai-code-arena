@@ -10,7 +10,7 @@ export function AppShell({
     <div className="h-screen flex overflow-hidden">
 
       {/* Fixed Sidebar */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Sidebar />
       </div>
 

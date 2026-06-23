@@ -12,35 +12,40 @@ model User {
   name        String?
   image       String?
   createdAt   DateTime     @default(now())
-
   comparisons Comparison[]
 }
 
 model Comparison {
-  id          String          @id @default(cuid())
-  prompt      String
-  language    String
-  createdAt   DateTime        @default(now())
+  id             String          @id @default(cuid())
 
-  userId      String
-  user        User            @relation(fields: [userId], references: [id])
+  prompt         String
+  language       String
 
-  responses   ModelResponse[]
+  createdAt      DateTime        @default(now())
 
-  @@index([userId])
-  @@index([createdAt])
+  userId         String
+
+  gptScore       Int?
+  geminiScore    Int?
+  claudeScore    Int?
+
+  winner         String?
+
+  reason         String?
+  recommendation String?
+
+  user           User            @relation(fields: [userId], references: [id])
+
+  responses      ModelResponse[]
 }
 
 model ModelResponse {
-  id            String      @id @default(cuid())
-
-  provider      String
-  model         String
-  output        String      @db.Text
-
-  duration      Int?
-  tokens        Int?
-
-  comparisonId  String
-  comparison    Comparison  @relation(fields: [comparisonId], references: [id])
+  id           String     @id @default(cuid())
+  provider     String
+  model        String
+  output       String
+  duration     Int?
+  tokens       Int?
+  comparisonId String
+  comparison   Comparison @relation(fields: [comparisonId], references: [id])
 }

@@ -1,54 +1,70 @@
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+"use client";
 
-export default async function HistoryPage() {
-  const session = await auth();
+import { useEffect, useState } from "react";
 
-  if (!session?.user?.email) {
-    return (
-      <div className="p-8">
-        Please login first
-      </div>
-    );
-  }
+export default function HistoryPage() {
+  const [data, setData] = useState([]);
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session.user.email,
-    },
-    include: {
-      comparisons: {
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-    },
-  });
+  useEffect(() => {
+    fetch("/api/history")
+      .then((res) => res.json())
+      .then((res) =>
+        setData(res.comparisons || [])
+      );
+  }, []);
 
   return (
-    <div className="p-8">
+    <div>
+
       <h1 className="text-3xl font-bold mb-6">
         History
       </h1>
 
-      <div className="space-y-4">
-        {user?.comparisons.map((comparison) => (
-          <div
-            key={comparison.id}
-            className="border rounded-lg p-4"
-          >
-            <p className="font-semibold">
-              {comparison.prompt}
-            </p>
+      <table className="w-full border">
 
-            <p className="text-sm text-gray-500">
-              {new Date(
-                comparison.createdAt
-              ).toLocaleString()}
-            </p>
-          </div>
-        ))}
-      </div>
+        <thead>
+          <tr className="border-b">
+            <th>Prompt</th>
+            <th>Winner</th>
+            <th>GPT</th>
+            <th>Gemini</th>
+            <th>Claude</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {data.map((item: any) => (
+            <tr
+              key={item.id}
+              className="border-b"
+            >
+              <td className="p-3">
+                {item.prompt}
+              </td>
+
+              <td>
+                {item.winner}
+              </td>
+
+              <td>
+                {item.gptScore}
+              </td>
+
+              <td>
+                {item.geminiScore}
+              </td>
+
+              <td>
+                {item.claudeScore}
+              </td>
+            </tr>
+          ))}
+
+        </tbody>
+
+      </table>
+
     </div>
   );
 }
