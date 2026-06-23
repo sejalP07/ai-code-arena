@@ -1,7 +1,8 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { GitHub, Chrome } from "lucide-react";
+
+import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function LoginPage() {
   return (
@@ -22,7 +23,7 @@ export default function LoginPage() {
             onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="w-full flex items-center justify-center gap-3 border rounded-lg px-4 py-3 hover:bg-muted transition"
           >
-            <Chrome size={18} />
+            <FaGoogle size={18} />
             Continue with Google
           </button>
 
@@ -30,7 +31,7 @@ export default function LoginPage() {
             onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="w-full flex items-center justify-center gap-3 border rounded-lg px-4 py-3 hover:bg-muted transition"
           >
-            <GitHub size={18} />
+            <FaGithub size={18} />
             Continue with GitHub
           </button>
         </div>
