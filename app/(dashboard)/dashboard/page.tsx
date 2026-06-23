@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Loader2 } from "lucide-react";
+
+import {
+  Loader2,
+  Trophy,
+  Brain,
+} from "lucide-react";
+
+import {
+  SiOpenai,
+  SiGoogle,
+} from "react-icons/si";
 
 type Responses = {
   gpt?: string;
@@ -108,6 +118,33 @@ export default function DashboardPage() {
   return (
     <div className="max-w-full mx-auto">
 
+    {/* Hero Section */}
+    <div className="mb-6 rounded-3xl p-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl">
+
+      <h1 className="text-4xl font-bold">
+        🚀 AI Code Arena
+      </h1>
+
+      <p className="mt-2 text-lg opacity-90">
+        Compare GPT, Gemini & Claude side by side
+      </p>
+
+      <div className="flex gap-3 mt-5">
+        <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+          GPT
+        </span>
+
+        <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+          Gemini
+        </span>
+
+        <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+          Claude
+        </span>
+      </div>
+
+    </div>
+
       {/* Prompt Box */}
       <div className="border rounded-3xl p-4 shadow-sm bg-white">
 
@@ -161,8 +198,17 @@ export default function DashboardPage() {
               handleCompare
             }
             disabled={loading}
-            className="px-5 py-2 rounded-xl bg-black text-white flex items-center gap-2"
-          >
+            className="px-6 py-3
+rounded-xl
+bg-gradient-to-r
+from-indigo-600
+to-purple-600
+text-white
+font-semibold
+shadow-lg
+hover:scale-105
+transition
+flex items-center gap-2">
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
