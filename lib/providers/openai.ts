@@ -7,16 +7,32 @@ const client = new OpenAI({
 
 export class OpenAIProvider {
   async generate(prompt: string) {
-    const completion = await client.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    });
+    try {
+      const completion =
+        await client.chat.completions.create({
+          model: "openai/gpt-4o-mini",
 
-    return completion.choices[0].message.content ?? "";
+          max_tokens: 300,
+
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        });
+
+      return (
+        completion.choices[0].message.content ??
+        "No response"
+      );
+    } catch (error: any) {
+      console.error(
+        "GPT Error:",
+        error
+      );
+
+      return "GPT unavailable";
+    }
   }
 }

@@ -138,19 +138,19 @@ export async function POST(req: Request) {
       },
     });
   } catch (error: any) {
-    console.error(
-      "COMPARE ERROR:",
-      error
-    );
+  console.error(
+    "COMPARE ERROR FULL:",
+    error
+  );
 
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error?.message ??
-          "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    {
+      success: false,
+      error:
+        error?.message ??
+        "Unknown error",
+    },
+    { status: 500 }
+  );
+}
 }

@@ -106,7 +106,7 @@ Example:
           },
         ],
         temperature: 0,
-        max_tokens: 500,
+        max_tokens: 1000,
       });
 
     const content =

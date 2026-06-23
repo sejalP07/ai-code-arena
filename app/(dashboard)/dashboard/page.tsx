@@ -12,7 +12,14 @@ import {
 import {
   SiOpenai,
   SiGoogle,
+  SiAnthropic,
 } from "react-icons/si";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+
+import {
+  oneDark,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+
 
 type Responses = {
   gpt?: string;
@@ -21,13 +28,46 @@ type Responses = {
 };
 
 export default function DashboardPage() {
+  const markdownComponents = {
+  code({
+    inline,
+    className,
+    children,
+    ...props
+  }: any) {
+    const match = /language-(\w+)/.exec(
+      className || ""
+    );
+
+    return !inline && match ? (
+      <SyntaxHighlighter
+        style={oneDark}
+        language={match[1]}
+        PreTag="div"
+        {...props}
+      >
+        {String(children).replace(
+          /\n$/,
+          ""
+        )}
+      </SyntaxHighlighter>
+    ) : (
+      <code
+        className={className}
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
+};
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("Python");
   const [loading, setLoading] = useState(false);
 
   const [responses, setResponses] =
     useState<Responses | null>(null);
-
+  const [copied, setCopied] = useState("");
   const [winner, setWinner] =
     useState("");
 
@@ -114,12 +154,27 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }
+  const copyToClipboard = async (
+  text: string,
+  model: string
+) => {
+  try {
+    await navigator.clipboard.writeText(text);
 
+    setCopied(model);
+
+    setTimeout(() => {
+      setCopied("");
+    }, 2000);
+  } catch (error) {
+    console.error(error);
+  }
+};
   return (
     <div className="max-w-full mx-auto">
 
     {/* Hero Section */}
-    <div className="mb-6 rounded-3xl p-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl">
+    <div className="mb-6 rounded-3xl p-8 bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl">
 
       <h1 className="text-4xl font-bold">
         🚀 AI Code Arena
@@ -200,7 +255,7 @@ export default function DashboardPage() {
             disabled={loading}
             className="px-6 py-3
 rounded-xl
-bg-gradient-to-r
+bg-linear-to-r
 from-indigo-600
 to-purple-600
 text-white
@@ -225,48 +280,49 @@ flex items-center gap-2">
 
       {/* Winner Section */}
       {winner && scores && (
-        <div className="mt-6 border rounded-2xl p-6 bg-green-50">
+      <div className="mt-6 rounded-3xl p-8 bg-linear-to-r from-green-500 to-emerald-600 text-white shadow-xl">
+            <div className="flex items-center gap-3">
+  <Trophy size={32} />
+  <h2 className="text-3xl font-bold">
+    Winner: {winner.toUpperCase()}
+  </h2>
+</div>
 
-          <h2 className="text-2xl font-bold">
-            🏆 Winner:{" "}
-            {winner.toUpperCase()}
-          </h2>
-
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-white/80 mt-2">
             Language: {language}
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 mt-4">
 
-            <div className="bg-white border rounded-xl p-4">
-              <p className="font-semibold">
-                GPT
-              </p>
+          <div className="bg-white text-black rounded-2xl p-4 shadow-lg">
+  <p className="font-semibold text-gray-500">
+    GPT
+  </p>
 
-              <p className="text-3xl font-bold">
-                {scores.gpt}
-              </p>
-            </div>
+  <p className="text-4xl font-bold">
+    {scores.gpt}
+  </p>
+</div>
 
-            <div className="bg-white border rounded-xl p-4">
-              <p className="font-semibold">
-                Gemini
-              </p>
+           <div className="bg-white text-black rounded-2xl p-4 shadow-lg">
+  <p className="font-semibold text-gray-500">
+    Gemini
+  </p>
 
-              <p className="text-3xl font-bold">
-                {scores.gemini}
-              </p>
-            </div>
+  <p className="text-4xl font-bold">
+    {scores.gemini}
+  </p>
+</div> 
 
-            <div className="bg-white border rounded-xl p-4">
-              <p className="font-semibold">
-                Claude
-              </p>
+        <div className="bg-white text-black rounded-2xl p-4 shadow-lg">
+  <p className="font-semibold text-gray-500">
+    Claude
+  </p>
 
-              <p className="text-3xl font-bold">
-                {scores.claude}
-              </p>
-            </div>
+  <p className="text-4xl font-bold">
+    {scores.claude}
+  </p>
+</div>    
 
           </div>
 
@@ -275,7 +331,7 @@ flex items-center gap-2">
               Why This Model Won
             </h3>
 
-            <p className="mt-2 text-gray-700">
+            <p className="mt-2 text-white">
               {reason}
             </p>
           </div>
@@ -285,9 +341,9 @@ flex items-center gap-2">
               Recommendation
             </h3>
 
-            <p className="mt-2 text-gray-700">
-              {recommendation}
-            </p>
+            <p className="mt-2 text-white">
+  {recommendation}
+</p>
           </div>
 
         </div>
@@ -298,23 +354,40 @@ flex items-center gap-2">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
 
           {/* GPT */}
-          <div className="border rounded-2xl p-6 bg-white overflow-auto">
+         <div className="border rounded-2xl p-6 bg-white overflow-auto">
+          <div className="flex justify-between items-center mb-4">
 
-            <div className="flex justify-between mb-4">
-              <h2 className="font-bold text-xl">
-                GPT
-              </h2>
+  <div className="flex items-center gap-2">
+    <SiOpenai size={22} />
 
-              <span className="text-xs border px-2 py-1 rounded">
-                OpenAI
-              </span>
-            </div>
+    <h2 className="font-bold text-xl">
+      GPT
+    </h2>
+  </div>
 
+  <button
+    onClick={() =>
+      copyToClipboard(
+        responses.gpt ?? "",
+        "gpt"
+      )
+    }
+    className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+  >
+    {copied === "gpt"
+      ? "Copied!"
+      : "Copy"}
+  </button>
+
+</div>
             <div className="prose max-w-none">
-              <ReactMarkdown>
-                {responses.gpt ??
-                  ""}
-              </ReactMarkdown>
+              <ReactMarkdown
+  components={
+    markdownComponents
+  }
+>
+  {responses.gpt ?? ""}
+</ReactMarkdown>
             </div>
 
           </div>
@@ -322,21 +395,40 @@ flex items-center gap-2">
           {/* Gemini */}
           <div className="border rounded-2xl p-6 bg-white overflow-auto">
 
-            <div className="flex justify-between mb-4">
-              <h2 className="font-bold text-xl">
-                Gemini
-              </h2>
+           <div className="flex justify-between items-center mb-4">
 
-              <span className="text-xs border px-2 py-1 rounded">
-                Google
-              </span>
-            </div>
+  <div className="flex items-center gap-2">
+    <SiGoogle size={22} />
+
+    <h2 className="font-bold text-xl">
+      Gemini
+    </h2>
+  </div>
+
+  <button
+    onClick={() =>
+      copyToClipboard(
+        responses.gemini ?? "",
+        "gemini"
+      )
+    }
+    className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+  >
+    {copied === "gemini"
+      ? "Copied!"
+      : "Copy"}
+  </button>
+
+</div>
 
             <div className="prose max-w-none">
-              <ReactMarkdown>
-                {responses.gemini ??
-                  ""}
-              </ReactMarkdown>
+              <ReactMarkdown
+  components={
+    markdownComponents
+  }
+>
+  {responses.gemini ?? ""}
+</ReactMarkdown>
             </div>
 
           </div>
@@ -344,21 +436,39 @@ flex items-center gap-2">
           {/* Claude */}
           <div className="border rounded-2xl p-6 bg-white overflow-auto">
 
-            <div className="flex justify-between mb-4">
-              <h2 className="font-bold text-xl">
-                Claude
-              </h2>
+            <div className="flex justify-between items-center mb-4">
 
-              <span className="text-xs border px-2 py-1 rounded">
-                Anthropic
-              </span>
-            </div>
+  <div className="flex items-center gap-2">
+    <Brain size={22} />
 
+    <h2 className="font-bold text-xl">
+      Claude
+    </h2>
+  </div>
+
+  <button
+    onClick={() =>
+      copyToClipboard(
+        responses.claude ?? "",
+        "claude"
+      )
+    }
+    className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
+  >
+    {copied === "claude"
+      ? "Copied!"
+      : "Copy"}
+  </button>
+
+</div>
             <div className="prose max-w-none">
-              <ReactMarkdown>
-                {responses.claude ??
-                  ""}
-              </ReactMarkdown>
+              <ReactMarkdown
+  components={
+    markdownComponents
+  }
+>
+  {responses.claude ?? ""}
+</ReactMarkdown>
             </div>
 
           </div>
