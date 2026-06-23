@@ -1,5 +1,7 @@
 import ReactMarkdown from "react-markdown";
 
+const markdownComponents = {};
+
 async function getComparison(
   id: string
 ) {
@@ -142,7 +144,7 @@ export default async function ComparisonPage({
             GPT
           </h2>
 
-          <ReactMarkdown>
+          <ReactMarkdown components={markdownComponents}>
             {gpt?.output ?? ""}
           </ReactMarkdown>
 
@@ -154,7 +156,7 @@ export default async function ComparisonPage({
             Gemini
           </h2>
 
-          <ReactMarkdown>
+          <ReactMarkdown components={markdownComponents}>
             {gemini?.output ?? ""}
           </ReactMarkdown>
 
@@ -166,7 +168,7 @@ export default async function ComparisonPage({
             Claude
           </h2>
 
-          <ReactMarkdown>
+          <ReactMarkdown components={markdownComponents}>
             {claude?.output ?? ""}
           </ReactMarkdown>
 
