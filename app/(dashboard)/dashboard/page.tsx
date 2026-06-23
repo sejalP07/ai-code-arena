@@ -12,21 +12,29 @@ type Responses = {
 
 export default function DashboardPage() {
   const [prompt, setPrompt] = useState("");
+  const [language, setLanguage] = useState("Python");
   const [loading, setLoading] = useState(false);
 
   const [responses, setResponses] =
     useState<Responses | null>(null);
 
-  const [winner, setWinner] = useState("");
-  const [reason, setReason] = useState("");
-  const [recommendation, setRecommendation] =
+  const [winner, setWinner] =
     useState("");
 
-  const [scores, setScores] = useState<{
-    gpt: number;
-    gemini: number;
-    claude: number;
-  } | null>(null);
+  const [reason, setReason] =
+    useState("");
+
+  const [
+    recommendation,
+    setRecommendation,
+  ] = useState("");
+
+  const [scores, setScores] =
+    useState<{
+      gpt: number;
+      gemini: number;
+      claude: number;
+    } | null>(null);
 
   async function handleCompare() {
     if (!prompt.trim()) return;
@@ -34,18 +42,23 @@ export default function DashboardPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/compare", {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          prompt,
-        }),
-      });
+      const res = await fetch(
+        "/api/compare",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            prompt,
+            language,
+          }),
+        }
+      );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       if (!data.success) {
         throw new Error(
@@ -54,18 +67,9 @@ export default function DashboardPage() {
         );
       }
 
-      const responseData = {
-        gpt:
-          data.responses?.gpt ?? "",
-        gemini:
-          data.responses?.gemini ??
-          "",
-        claude:
-          data.responses?.claude ??
-          "",
-      };
-
-      setResponses(responseData);
+      setResponses(
+        data.responses
+      );
 
       setWinner(
         data.winner ?? ""
@@ -76,18 +80,20 @@ export default function DashboardPage() {
       );
 
       setRecommendation(
-        data.recommendation ?? ""
+        data.recommendation ??
+          ""
       );
 
       setScores({
         gpt:
-          data.scores?.gpt ?? 0,
+          data.scores?.gpt ??
+          0,
         gemini:
-          data.scores?.gemini ??
-          0,
+          data.scores
+            ?.gemini ?? 0,
         claude:
-          data.scores?.claude ??
-          0,
+          data.scores
+            ?.claude ?? 0,
       });
     } catch (error) {
       console.error(
@@ -116,7 +122,40 @@ export default function DashboardPage() {
           className="w-full h-24 resize-none outline-none border-none bg-transparent"
         />
 
-        <div className="flex justify-end mt-3">
+        <div className="flex justify-between items-center mt-3">
+
+          <label className="flex items-center gap-2">
+            <span className="text-sm">
+              Language
+            </span>
+
+            <select
+              value={language}
+              onChange={(e) =>
+                setLanguage(
+                  e.target.value
+                )
+              }
+              className="border rounded-xl px-3 py-2"
+            >
+              <option>
+                Python
+              </option>
+
+              <option>
+                Java
+              </option>
+
+              <option>
+                JavaScript
+              </option>
+
+              <option>
+                C++
+              </option>
+            </select>
+          </label>
+
           <button
             onClick={
               handleCompare
@@ -133,6 +172,7 @@ export default function DashboardPage() {
               "Compare"
             )}
           </button>
+
         </div>
 
       </div>
@@ -145,6 +185,10 @@ export default function DashboardPage() {
             🏆 Winner:{" "}
             {winner.toUpperCase()}
           </h2>
+
+          <p className="text-sm text-gray-600 mt-2">
+            Language: {language}
+          </p>
 
           <div className="grid md:grid-cols-3 gap-4 mt-4">
 
@@ -185,7 +229,7 @@ export default function DashboardPage() {
               Why This Model Won
             </h3>
 
-            <p className="mt-2">
+            <p className="mt-2 text-gray-700">
               {reason}
             </p>
           </div>
@@ -195,7 +239,7 @@ export default function DashboardPage() {
               Recommendation
             </h3>
 
-            <p className="mt-2">
+            <p className="mt-2 text-gray-700">
               {recommendation}
             </p>
           </div>
@@ -208,10 +252,10 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
 
           {/* GPT */}
-          <div className="border rounded-2xl p-6 shadow-sm min-h-[650px] overflow-auto bg-white">
+          <div className="border rounded-2xl p-6 bg-white overflow-auto">
 
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold">
+            <div className="flex justify-between mb-4">
+              <h2 className="font-bold text-xl">
                 GPT
               </h2>
 
@@ -230,10 +274,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Gemini */}
-          <div className="border rounded-2xl p-6 shadow-sm min-h-[650px] overflow-auto bg-white">
+          <div className="border rounded-2xl p-6 bg-white overflow-auto">
 
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold">
+            <div className="flex justify-between mb-4">
+              <h2 className="font-bold text-xl">
                 Gemini
               </h2>
 
@@ -252,10 +296,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Claude */}
-          <div className="border rounded-2xl p-6 shadow-sm min-h-[650px] overflow-auto bg-white">
+          <div className="border rounded-2xl p-6 bg-white overflow-auto">
 
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold">
+            <div className="flex justify-between mb-4">
+              <h2 className="font-bold text-xl">
                 Claude
               </h2>
 

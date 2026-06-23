@@ -20,7 +20,29 @@ export async function judgeResponses(
   gemini: string,
   claude: string
 ): Promise<JudgeResult> {
-  const judgePrompt = `
+  try {
+    const safeGPT =
+      !gpt ||
+      gpt.trim() === "" ||
+      gpt.toLowerCase().includes("unavailable")
+        ? "No valid response"
+        : gpt;
+
+    const safeGemini =
+      !gemini ||
+      gemini.trim() === "" ||
+      gemini.toLowerCase().includes("unavailable")
+        ? "No valid response"
+        : gemini;
+
+    const safeClaude =
+      !claude ||
+      claude.trim() === "" ||
+      claude.toLowerCase().includes("unavailable")
+        ? "No valid response"
+        : claude;
+
+    const judgePrompt = `
 You are a Senior Software Engineer and Technical Interviewer.
 
 Compare the following AI-generated solutions.
@@ -31,17 +53,17 @@ ${prompt}
 ====================
 GPT Response
 ====================
-${gpt}
+${safeGPT}
 
 ====================
 Gemini Response
 ====================
-${gemini}
+${safeGemini}
 
 ====================
 Claude Response
 ====================
-${claude}
+${safeClaude}
 
 Evaluate each response on:
 
@@ -53,72 +75,124 @@ Evaluate each response on:
 
 Give each model a score from 0-100.
 
-Then determine the winner.
-
-Also explain:
-- Why the winner is better
-- Which response should be used
-
 IMPORTANT:
-Return ONLY valid JSON.
 
-Do NOT use markdown.
-Do NOT use \`\`\`.
-Do NOT add any text outside JSON.
+- If a response is missing, unavailable, empty,
+  or says "No valid response", score it 0.
+- A model with score 0 CANNOT be the winner.
+- Winner must be the highest scoring valid model.
+
+Return ONLY valid JSON.
 
 Example:
 
 {
-  "gpt": 92,
+  "gpt": 95,
   "gemini": 88,
-  "claude": 95,
-  "winner": "claude",
-  "reason": "Claude provided the most complete and readable solution with strong explanations and best practices.",
-  "recommendation": "Use Claude's solution for production. GPT is also acceptable."
+  "claude": 0,
+  "winner": "gpt",
+  "reason": "GPT provided the most complete and optimized solution.",
+  "recommendation": "Use GPT's solution."
 }
 `;
 
-  try {
-    const result = await client.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: judgePrompt,
-        },
-      ],
-      temperature: 0,
-      max_tokens: 500,
-    });
+    const result =
+      await client.chat.completions.create({
+        model: "openai/gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: judgePrompt,
+          },
+        ],
+        temperature: 0,
+        max_tokens: 500,
+      });
 
     const content =
-      result.choices[0].message.content ?? "{}";
+      result.choices[0].message.content ??
+      "{}";
 
     const cleaned = content
       .replace(/```json/gi, "")
       .replace(/```/g, "")
       .trim();
 
-    const parsed = JSON.parse(cleaned);
+    const parsed =
+      JSON.parse(cleaned);
+
+    let gptScore = Number(
+      parsed.gpt ?? 0
+    );
+
+    let geminiScore = Number(
+      parsed.gemini ?? 0
+    );
+
+    let claudeScore = Number(
+      parsed.claude ?? 0
+    );
+
+    if (
+      safeGPT ===
+      "No valid response"
+    ) {
+      gptScore = 0;
+    }
+
+    if (
+      safeGemini ===
+      "No valid response"
+    ) {
+      geminiScore = 0;
+    }
+
+    if (
+      safeClaude ===
+      "No valid response"
+    ) {
+      claudeScore = 0;
+    }
+
+    const scores = [
+      {
+        name: "gpt",
+        score: gptScore,
+      },
+      {
+        name: "gemini",
+        score: geminiScore,
+      },
+      {
+        name: "claude",
+        score: claudeScore,
+      },
+    ];
+
+    scores.sort(
+      (a, b) =>
+        b.score - a.score
+    );
+
+    const winner =
+      scores[0].score > 0
+        ? scores[0].name
+        : "none";
 
     return {
-      gpt: Number(parsed.gpt ?? 0),
-      gemini: Number(parsed.gemini ?? 0),
-      claude: Number(parsed.claude ?? 0),
+      gpt: gptScore,
+      gemini: geminiScore,
+      claude: claudeScore,
 
-      winner: String(
-        parsed.winner ?? "unknown"
-      ),
+      winner,
 
-      reason: String(
+      reason:
         parsed.reason ??
-          "No reason provided"
-      ),
+        `${winner.toUpperCase()} produced the strongest response.`,
 
-      recommendation: String(
+      recommendation:
         parsed.recommendation ??
-          "No recommendation provided"
-      ),
+        `Use ${winner.toUpperCase()} for this task.`,
     };
   } catch (error) {
     console.error(
@@ -130,10 +204,11 @@ Example:
       gpt: 0,
       gemini: 0,
       claude: 0,
-      winner: "unknown",
-      reason: "Judge failed",
+      winner: "none",
+      reason:
+        "Judge failed to evaluate responses.",
       recommendation:
-        "Unable to evaluate responses",
+        "Try again later.",
     };
   }
 }
